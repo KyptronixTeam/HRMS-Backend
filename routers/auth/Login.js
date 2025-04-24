@@ -35,7 +35,7 @@ appRouter.post("/log-in", async (req, res) => {
     }
 
     const session = JWT.sign(
-      { user: isUserInfoExist._id },
+      { user: isUserInfoExist},
       process.env.SESSION__STRING,
       {
         expiresIn: "2d",

@@ -32,6 +32,19 @@ const TaskSchema = new Mongoose.Schema(
       ref: "user",
       require: true,
     },
+    doc: [
+      {
+        filename: { type: String, },
+        filePath: { type: String, },
+        fileType: {
+          type: String,
+          enum: ["image", "pdf"],
+        },
+      },
+    ],
+    taskUpdate: {
+      type: String,
+    },
     taskType: {
       type: String,
       enum: ["Onboarding", "Daily",],
@@ -39,7 +52,7 @@ const TaskSchema = new Mongoose.Schema(
     taskStatus: {
       type: String,
       default: "In Progress",
-      enum: ["In Progress", "In Review", "Done"],
+      enum: ["In Progress", "In Review", "Complete" , "Reject"],
     },
   },
   {

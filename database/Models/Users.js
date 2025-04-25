@@ -54,7 +54,7 @@ const UserSchema = new Mongoose.Schema(
     accountStatus: {
       type: String,
       default: "active",
-      enum: ["active", "inactive", "inprogress"],
+      enum: ["active", "inactive",],
     },
     tasks: [
       {

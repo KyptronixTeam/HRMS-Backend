@@ -1,12 +1,25 @@
-const appRouter = require("express").Router();
+const express = require("express");
+const appRouter = express.Router();
 const Task = require("../../database/Models/Tasks");
 const Users = require("../../database/Models/Users");
+const multer = require("multer");
+const path = require("path");
 
-// create new task...
+// Multer Storage Configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Ensure this folder exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
-appRouter.post("/create-task", async (req, res) => {
+// Multer Middleware to Allow Multiple Uploads
+const upload = multer({ storage: storage });
+
+appRouter.post("/create-task", upload.array("docs", 10), async (req, res) => {
   try {
-    // get the task information..
     const {
       employeeName,
       taskTitle,
@@ -15,10 +28,20 @@ appRouter.post("/create-task", async (req, res) => {
       description,
       assignedToID,
       assignedByID,
-      taskType
+      taskType,
     } = req.body;
 
-    // create the new task...
+    // Process uploaded files if any
+    let uploadedDocs = [];
+    if (req.files && req.files.length > 0) {
+      uploadedDocs = req.files.map((file) => ({
+        filename: file.filename,
+        filePath: file.path,
+        fileType: getFileType(file.mimetype),
+      }));
+    }
+
+    // Create new task
     const createNewTask = new Task({
       employeeName,
       taskTitle,
@@ -27,30 +50,36 @@ appRouter.post("/create-task", async (req, res) => {
       taskDescription: description,
       assignedToID,
       assignedByID,
-      taskType
+      taskType,
+      doc: uploadedDocs,
     });
-    // save the task in db..
+
     const createdTaskId = await createNewTask.save();
+
     if (createNewTask) {
       const getEmployee = await Users.findById(assignedToID);
       getEmployee.tasks.push(createdTaskId._id);
+      await getEmployee.save();
 
-      const taskAdd = await getEmployee.save();
-
-      // responce back to client..
-      res.status(200).json({
+      return res.status(200).json({
         message: "Task created successfully",
         status: "Success",
       });
     }
-    //  console.log(createdTaskId)
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Internal server error",
       status: "Error",
     });
   }
 });
+
+// Helper to determine file type from MIME
+function getFileType(mimeType) {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType === "application/pdf") return "pdf";
+  return "other";
+}
 
 module.exports = appRouter;

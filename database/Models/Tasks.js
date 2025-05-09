@@ -51,8 +51,8 @@ const TaskSchema = new Mongoose.Schema(
     },
     taskStatus: {
       type: String,
-      default: "In Progress",
-      enum: ["In Progress", "In Review", "Complete" , "Reject"],
+      default: "To Do",
+      enum: ["To Do"," In Progress", "In Review", "Complete" , "Reject"],
     },
   },
   {

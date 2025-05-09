@@ -6,7 +6,7 @@ const appRouter = require("express").Router();
 appRouter.get("/get-all-employee", async (req, res) => {
   try {
    
-    const getAllEmployee = await Users.find();
+    const getAllEmployee = await Users.find().populate('tasks');
     if (getAllEmployee.length > 0) {
       return res.status(200).json({
         employessList: getAllEmployee,
